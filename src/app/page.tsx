@@ -52,7 +52,7 @@ export default function Home() {
 
   // 認証済み時の表示
   return (
-    <main className="flex flex-1 w-full max-w-2xl flex-col gap-6 px-6 py-8 mx-auto">
+    <main className="flex flex-1 w-full max-w-2xl flex-col gap-6 px-6 py-8 mx-auto items-center justify-center">
       {/* ヘッダー */}
       <header className="flex items-center justify-between">
         <UserNameEdit
