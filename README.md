@@ -1,80 +1,91 @@
-# next-starter
+# tuduri
 
-This is a starter template for monorepo projects using Next.js. It includes a set of tools and configurations to help you get started quickly with building full-stack applications.
+日々の思いや感情をその場で書き留め、あとから AI 分析に活用するためのシンプルなログ記録アプリです。
 
-## Features
-- [pnpm](https://pnpm.io/) A package manager that is fast and efficient.
-- [Next.js 16](https://nextjs.org/) A React framework for building full-stack applications.
-- [Biome](https://biomejs.dev/) A fast and extensible code formatter and linter.
-- [BetterAuth](https://better-auth.com) A simple and secure authentication library for Next.js.
-- [Tailwind CSS](https://tailwindcss.com/) A utility-first CSS framework for rapid UI development.
-- [orpc](https://orpc.dev) A type-safe, OpenAPI-compatible RPC framework for Next.js.
-- [Drizzle ORM](https://orm.drizzle.team/) A TypeScript ORM for SQL databases.
-- [SQLite](https://www.sqlite.org/index.html) A lightweight, file-based SQL database.
-- [Storybook](https://storybook.js.org/) A tool for developing UI components in isolation.
-- Experimental support for tsgo for type checking.
+テキスト入力と送信ボタンだけの最小限の UI で、git log のようなイミュータブルなチェーン構造を持つログを積み重ねていきます。
 
+## 特徴
 
-## Getting Started
+- **シンプルな UI**: テキストエリアと送信ボタンのみ。思考の邪魔をしません
+- **Google ログイン**: Google アカウントで簡単にログイン
+- **イミュータブルなログ**: 一度記録したログは変更不可。git のコミット履歴のようなチェーン構造
+- **ダーク / ライトテーマ**: カスタムデザイントークンによる目に優しい配色
+- **外部 API**: 記録したログを日付指定で取得可能。AI 分析との連携を想定
 
-### Prerequisites
+## 技術スタック
 
-- **Node.js** 22+ (node24 by default)
-- **pnpm** 11+ 
-- **cocogitto** (via mise: `mise install`, or via cargo: `cargo install cocogitto`, or via brew: `brew install cocogitto`)
-Use `corepack enable pnpm` and `pnpm install`
-If you use node25+, install corepack globally with `npm install -g corepack` first.
+- [Next.js 16](https://nextjs.org/) — React フレームワーク
+- [Better Auth](https://better-auth.com) — Google OAuth 認証
+- [Drizzle ORM](https://orm.drizzle.team/) + SQLite — データベース
+- [oRPC](https://orpc.dev) — 型安全な API レイヤー
+- [daisyUI](https://daisyui.com/) + Tailwind CSS v4 — UI コンポーネント
+- [Biome](https://biomejs.dev/) — コードフォーマット / リント
+- [Vitest](https://vitest.dev/) — テスト
 
-### 1. Clone and Install
+## セットアップ
 
-    git clone <repository-url>
-    cd <cloned-directory>
-    pnpm install
+### 前提条件
 
-### 2. Commit Convention Setup
+- Node.js 22+
+- pnpm 11+
 
-This project uses [Conventional Commits](https://www.conventionalcommits.org/) for commit messages.
-Commit messages are validated locally via [cocogitto](https://docs.cocogitto.io/).
+### 1. インストール
 
-Run the setup script to install the commit-msg hook:
+```bash
+pnpm install
+```
 
-    bash scripts/setup.sh
+### 2. 環境変数
 
-This needs to be done once after cloning. The hook validates commit messages against `cog.toml` at commit time, so no re-run is needed when `cog.toml` is updated. Re-run only if you need to reinstall the hook (e.g., after deleting it).
+```bash
+cp .env.local.example .env.local
+```
 
-### 3. Environment Variables
+`.env.local` に以下を設定してください:
 
-    cp .env.local.example .env.local
+| 変数 | 必須 | 説明 |
+|------|------|------|
+| `GOOGLE_CLIENT_ID` | はい | Google OAuth クライアント ID |
+| `GOOGLE_CLIENT_SECRET` | はい | Google OAuth クライアントシークレット |
+| `BETTER_AUTH_SECRET` | はい | 32バイトのランダム hex 文字列（`openssl rand -hex 32` で生成） |
+| `BETTER_AUTH_URL` | いいえ | アプリのベースURL。デフォルト: `http://localhost:3000` |
+| `DATABASE_URL` | いいえ | DB 接続文字列。デフォルト: `file:local.db` |
 
-Edit `.env.local` and set the following variables:
+### 3. データベースセットアップ
 
-| Variable | Required | Description |
-|---|---|---|
-| `GOOGLE_CLIENT_ID` | Yes | Google OAuth client ID |
-| `GOOGLE_CLIENT_SECRET` | Yes | Google OAuth client secret |
-| `BETTER_AUTH_SECRET` | Yes | A random 32-byte hex string. Generate with: `openssl rand -hex 32` |
-| `BETTER_AUTH_URL` | No | Base URL of the app. Default: `http://localhost:3000` |
-| `DATABASE_URL` | No | Database connection string. Default: `file:local.db` (SQLite) |
+```bash
+pnpm db:push
+```
 
-### 4. Database Setup
+### 4. 開発サーバー起動
 
-    pnpm db:push
+```bash
+pnpm dev
+```
 
-This creates `local.db` with all required tables.
+[http://localhost:3000](http://localhost:3000) を開いてください。
 
-For version-controlled migrations, use:
+## 利用可能なスクリプト
 
-    pnpm db:generate
-    pnpm db:migrate
+| コマンド | 説明 |
+|----------|------|
+| `pnpm dev` | 開発サーバー起動 |
+| `pnpm build` | プロダクションビルド |
+| `pnpm start` | ビルド済みアプリの起動 |
+| `pnpm typecheck` | TypeScript 型チェック |
+| `pnpm check` | Biome によるコード品質チェック |
+| `pnpm format` | Biome によるコードフォーマット |
+| `pnpm test:run` | テスト実行 |
+| `pnpm verify` | 型チェック + テスト + コード品質チェック |
+| `pnpm db:push` | DB スキーマを直接適用 |
+| `pnpm db:generate` | マイグレーションファイル生成 |
+| `pnpm db:migrate` | マイグレーション実行 |
 
-### 5. Start Development
+## アーキテクチャ
 
-    pnpm dev
+```
+Controller (router.ts) → Service (*.service.ts) → Repository (*.repository.ts) → Model (schema.ts)
+```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-Storybook for UI component development:
-
-    pnpm storybook
-
-Open [http://localhost:6006](http://localhost:6006).
+API は Controller / Service / Repository / Model の4層で構成されています。
+設計判断の詳細は [docs/adr/](./docs/adr/) を参照してください。

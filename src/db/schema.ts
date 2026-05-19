@@ -1,4 +1,9 @@
-import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import {
+  type AnySQLiteColumn,
+  integer,
+  sqliteTable,
+  text,
+} from "drizzle-orm/sqlite-core";
 
 export const user = sqliteTable("user", {
   id: text("id").primaryKey(),
@@ -54,17 +59,17 @@ export const verification = sqliteTable("verification", {
   updatedAt: integer("updated_at", { mode: "timestamp" }),
 });
 
-export const counters = sqliteTable("counter", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+/**
+ * ログテーブル
+ * イミュータブルな git-log 風のチェーン構造を持つ
+ */
+export const logs = sqliteTable("log", {
+  id: text("id").primaryKey(),
   userId: text("user_id")
     .notNull()
-    .unique()
     .references(() => user.id, { onDelete: "cascade" }),
-  count: integer("count").notNull().default(0),
-});
-
-export const posts = sqliteTable("post", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  title: text("title").notNull(),
+  author: text("author").notNull(),
+  message: text("message").notNull(),
+  parent: text("parent").references((): AnySQLiteColumn => logs.id),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
 });

@@ -1,8 +1,9 @@
 import { os } from "@orpc/server";
-import { eq, sql } from "drizzle-orm";
-import { z } from "zod";
-import { counters, posts } from "@/db/schema";
+import { createLogSchema, listLogsSchema } from "@/shared/schemas/log.schema";
+import { updateNameSchema } from "@/shared/schemas/user.schema";
 import type { ORPCContext } from "./context";
+import { createLog, listLogs } from "./services/log.service";
+import { updateUserName } from "./services/user.service";
 
 const base = os.$context<ORPCContext>();
 
@@ -29,76 +30,50 @@ export const router = {
     return { ok: true };
   }),
 
-  post: {
+  log: {
+    /**
+     * 新しいログを作成する
+     * 認証必須。同一ユーザーの直前ログを parent として自動設定する。
+     * 著者名は作成時点の session.user.name のスナップショット。
+     */
     create: protectedProcedure
-      .input(
-        z.object({
-          title: z.string().min(1),
-        }),
-      )
+      .input(createLogSchema)
       .handler(async ({ input, context }) => {
-        const [post] = await context.db
-          .insert(posts)
-          .values({
-            title: input.title,
-            createdAt: new Date(),
-          })
-          .returning();
+        const userId = getUserId(context);
+        const log = await createLog(
+          context.db,
+          userId,
+          context.session?.user.name,
+          input.message,
+        );
+        return log;
+      }),
 
-        return post;
+    /**
+     * ログ一覧を取得する
+     * 認証必須。自分のログのみ返す。
+     * date 指定時は UTC 基準でその日のログのみ返す。
+     */
+    list: protectedProcedure
+      .input(listLogsSchema)
+      .handler(async ({ input, context }) => {
+        const userId = getUserId(context);
+        return listLogs(context.db, userId, input.date);
       }),
   },
 
-  counter: {
-    // 返却保証: 常に counter オブジェクトを返す。null/undefined 非許容。
-    // 未存在時は count=0 で自動作成
-    get: protectedProcedure.handler(async ({ context }) => {
-      const userId = getUserId(context);
-
-      const [inserted] = await context.db
-        .insert(counters)
-        .values({ userId, count: 0 })
-        .onConflictDoNothing()
-        .returning();
-      if (inserted) return inserted;
-
-      const [existing] = await context.db
-        .select()
-        .from(counters)
-        .where(eq(counters.userId, userId));
-      if (!existing) throw new Error("Counter not found — data inconsistency");
-      return existing;
-    }),
-
-    // 単一SQL文でアトミックに +1
-    increment: protectedProcedure.handler(async ({ context }) => {
-      const userId = getUserId(context);
-
-      const [counter] = await context.db
-        .insert(counters)
-        .values({ userId, count: 1 })
-        .onConflictDoUpdate({
-          target: counters.userId,
-          set: { count: sql`${counters.count} + 1` },
-        })
-        .returning();
-      return counter;
-    }),
-
-    // 単一SQL文でアトミックに -1
-    decrement: protectedProcedure.handler(async ({ context }) => {
-      const userId = getUserId(context);
-
-      const [counter] = await context.db
-        .insert(counters)
-        .values({ userId, count: -1 })
-        .onConflictDoUpdate({
-          target: counters.userId,
-          set: { count: sql`${counters.count} - 1` },
-        })
-        .returning();
-      return counter;
-    }),
+  user: {
+    /**
+     * ユーザー名を更新する
+     * 認証必須。自分自身の名前のみ更新可能。
+     */
+    updateName: protectedProcedure
+      .input(updateNameSchema)
+      .handler(async ({ input, context }) => {
+        const userId = getUserId(context);
+        const updated = await updateUserName(context.db, userId, input.name);
+        return updated;
+      }),
   },
 };
 
