@@ -9,6 +9,30 @@ import * as logRepo from "@/lib/orpc/repositories/log.repository";
 /** Drizzle データベースインスタンスの型 */
 type Database = LibSQLDatabase<typeof schema>;
 
+type LogEntry = {
+  id: string;
+  author: string;
+  message: string;
+  parent: string | null;
+  createdAt: string;
+};
+
+function toLogEntry(log: {
+  id: string;
+  author: string;
+  message: string;
+  parent: string | null;
+  createdAt: Date;
+}): LogEntry {
+  return {
+    id: log.id,
+    author: log.author,
+    message: log.message,
+    parent: log.parent,
+    createdAt: log.createdAt.toISOString(),
+  };
+}
+
 /**
  * 新しいログを作成する
  * UUID v4 を生成し、同一ユーザーの直前ログを parent として設定する
@@ -29,7 +53,7 @@ export async function createLog(
   const previous = await logRepo.findLatestByUserId(db, userId);
   const author = authorName || "Unknown";
 
-  return logRepo.insertLog(db, {
+  const log = await logRepo.insertLog(db, {
     id,
     userId,
     author,
@@ -37,6 +61,8 @@ export async function createLog(
     parent: previous?.id ?? null,
     createdAt: new Date(),
   });
+
+  return toLogEntry(log);
 }
 
 /**
@@ -48,8 +74,9 @@ export async function createLog(
  * @returns ログレコードの配列（降順）
  */
 export async function listLogs(db: Database, userId: string, date?: string) {
-  if (date) {
-    return logRepo.findByUserIdAndDate(db, userId, date);
-  }
-  return logRepo.findAllByUserId(db, userId);
+  const logs = date
+    ? await logRepo.findByUserIdAndDate(db, userId, date)
+    : await logRepo.findAllByUserId(db, userId);
+
+  return logs.map(toLogEntry);
 }

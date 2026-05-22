@@ -171,7 +171,7 @@ describe("log", () => {
       const client = createUnauthedClient();
 
       await expect(client.log.create({ message: "hello" })).rejects.toThrow(
-        "UNAUTHORIZED",
+        "Authentication required",
       );
     });
 
@@ -181,11 +181,10 @@ describe("log", () => {
 
       expect(result).toMatchObject({
         id: expect.any(String),
-        userId: "log-user-1",
         author: "Alice",
         message: "最初のログ",
         parent: null,
-        createdAt: expect.any(Date),
+        createdAt: expect.any(String),
       });
     });
 
@@ -221,7 +220,9 @@ describe("log", () => {
     it("未認証の場合はエラーを返す", async () => {
       const client = createUnauthedClient();
 
-      await expect(client.log.list({})).rejects.toThrow("UNAUTHORIZED");
+      await expect(client.log.list({})).rejects.toThrow(
+        "Authentication required",
+      );
     });
 
     it("自分のログのみが返る", async () => {
@@ -234,15 +235,15 @@ describe("log", () => {
 
       const result = await clientA.log.list({});
 
-      expect(result).toHaveLength(2);
-      expect(result.every((log) => log.userId === "list-user-a")).toBe(true);
+      expect(result.logs).toHaveLength(2);
+      expect(result.logs.every((log) => log.author === "User A")).toBe(true);
     });
 
     it("date 指定で特定日のログのみ返る", async () => {
       const context = await createAuthContext("date-user", "Date User");
 
       await insertLog({
-        id: "date-log-1",
+        id: "11111111-1111-4111-8111-111111111111",
         userId: "date-user",
         author: "Date User",
         message: "2026-05-18 log",
@@ -250,11 +251,11 @@ describe("log", () => {
         createdAt: new Date("2026-05-18T09:00:00.000Z"),
       });
       await insertLog({
-        id: "date-log-2",
+        id: "22222222-2222-4222-8222-222222222222",
         userId: "date-user",
         author: "Date User",
         message: "2026-05-19 log",
-        parent: "date-log-1",
+        parent: "11111111-1111-4111-8111-111111111111",
         createdAt: new Date("2026-05-19T09:00:00.000Z"),
       });
 
@@ -263,13 +264,12 @@ describe("log", () => {
       });
       const result = await client.log.list({ date: "2026-05-19" });
 
-      expect(result).toHaveLength(1);
-      expect(result[0]).toMatchObject({
-        id: "date-log-2",
-        userId: "date-user",
+      expect(result.logs).toHaveLength(1);
+      expect(result.logs[0]).toMatchObject({
+        id: "22222222-2222-4222-8222-222222222222",
         message: "2026-05-19 log",
       });
-      expect(result[0].createdAt.toISOString().slice(0, 10)).toBe("2026-05-19");
+      expect(result.logs[0].createdAt.slice(0, 10)).toBe("2026-05-19");
     });
   });
 });
@@ -281,7 +281,7 @@ describe("user", () => {
 
       await expect(
         client.user.updateName({ name: "New Name" }),
-      ).rejects.toThrow("UNAUTHORIZED");
+      ).rejects.toThrow("Authentication required");
     });
 
     it("認証済みユーザーで名前を更新できる", async () => {
