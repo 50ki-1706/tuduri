@@ -89,3 +89,34 @@ Controller (router.ts) → Service (*.service.ts) → Repository (*.repository.t
 
 API は Controller / Service / Repository / Model の4層で構成されています。
 設計判断の詳細は [docs/adr/](./docs/adr/) を参照してください。
+
+## API
+
+tuduri は以下 2 種類の API エンドポイントを提供します。
+
+### RPC API（Web アプリ用）
+
+- **URL**: `/api/orpc`
+- **用途**: Web フロントエンドからの型安全な RPC 呼び出し
+- **プロトコル**: oRPC RPC Protocol
+
+### REST API（CLI / 外部ツール用）
+
+- **URL**: `/api/rest`
+- **用途**: CLI や外部ツールからの標準 REST 呼び出し
+- **API Docs (Scalar)**: http://localhost:3000/docs
+- **OpenAPI JSON**: `/api/openapi`
+
+### 認証方式
+
+Better Auth セッション Cookie（`better-auth.session_token`）。
+Google OAuth 2.0 Authorization Code Flow + PKCE で認証後、セッション Cookie を取得して API 呼び出しに使用します。
+
+### エンドポイント一覧
+
+| メソッド | パス              | 説明             | 認証   |
+| -------- | ----------------- | ---------------- | ------ |
+| `GET`    | `/health`         | ヘルスチェック   | 不要   |
+| `POST`   | `/logs`           | ログ作成         | 必須   |
+| `GET`    | `/logs`           | ログ一覧取得     | 必須   |
+| `PATCH`  | `/users/me/name`  | ユーザー名更新   | 必須   |
