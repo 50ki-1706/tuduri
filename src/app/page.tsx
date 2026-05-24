@@ -5,6 +5,7 @@
  */
 "use client";
 
+import Link from "next/link";
 import { useLogForm } from "@/hooks/useLogForm";
 import { useUserNameForm } from "@/hooks/useUserNameForm";
 import { signIn, signOut, useSession } from "@/lib/auth-client";
@@ -68,6 +69,9 @@ export default function Home() {
           onSave={userNameForm.handleSubmit}
         />
         <div className="flex items-center gap-2">
+          <Link href="/logs" className="btn btn-ghost btn-sm">
+            記録を見る
+          </Link>
           <ThemeToggle />
           <button
             type="button"
