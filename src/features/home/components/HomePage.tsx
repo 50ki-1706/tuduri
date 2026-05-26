@@ -1,7 +1,6 @@
 /**
- * アプリケーションのルートページ
- * 認証状態に応じてログイン画面またはログ入力画面を表示する
- * ページコンポーネントはレイアウトのみを担当し、ロジックはカスタムフックに委譲する
+ * ホームページの本体コンポーネント
+ * 認証状態に応じてログイン導線またはログ入力画面を表示する
  */
 "use client";
 
@@ -13,7 +12,7 @@ import LogForm from "@/shared/components/LogForm/LogForm";
 import ThemeToggle from "@/shared/components/ThemeToggle/ThemeToggle";
 import UserNameEdit from "@/shared/components/UserNameEdit/UserNameEdit";
 
-export default function Home() {
+export function HomePage() {
   const { data: session, isPending } = useSession();
   const logForm = useLogForm();
   const userNameForm = useUserNameForm();
@@ -96,3 +95,5 @@ export default function Home() {
     </main>
   );
 }
+
+export default HomePage;

@@ -1,7 +1,6 @@
 /**
- * ログ一覧ページ（/logs）
- * 認証状態をチェックし、認証済みの場合のみログ一覧を表示する
- * ページコンポーネントはレイアウトのみを担当し、ロジックはカスタムフックに委譲する
+ * ログ一覧ページの表示を担当するコンポーネントです。
+ * 認証状態に応じてローディング、ログイン案内、ログ一覧を切り替えます。
  */
 "use client";
 
@@ -10,7 +9,7 @@ import LogList from "@/features/logs/components/LogList";
 import { useLogList } from "@/features/logs/hooks/useLogList";
 import { signIn, useSession } from "@/lib/auth-client";
 
-export default function LogsPage() {
+export function LogsPage() {
   const { data: session, isPending } = useSession();
   // Intent: 認証確認が完了するまでログ取得を開始しない
   const enabled = !isPending && !!session;
@@ -66,3 +65,5 @@ export default function LogsPage() {
     </main>
   );
 }
+
+export default LogsPage;
