@@ -7,8 +7,18 @@
 - バックエンドはテストコードを書いてください。
 - コードを実装した後は、必ず`verify`スキルを使用してコードが正しく動作し、必要な基準を満たしていることを確認してください。
 - スクリプトを実行する際は`&&`は使用せず、1つずつ実行してください。
+- ページのルーティングは`src/app/(app)`以下に定義してください。
+    - ここではルーティング定義のみ行い、内容は、`src/features/`からインポートしてください。
+- LPのルーティングは`src/app/(public)`以下に定義してください。
 - 定数は`src/constants/`以下に定義してください。
-- 共通の処理は、`src/shared/`以下に定義してください.
+- 共通の処理は、`src/shared/`以下に定義してください。
+    ー 共通のUIコンポーネントは、`src/shared/components/`以下に作成してください。
+    - 共通のUIロジックは、`src/shared/hooks/`以下に作成してください。
+    - 共通のユーティリティ関数は、`src/shared/utils/`以下に作成してください。
+- ページ固有の処理は、`src/features/`以下に定義してください。
+    - ページ固有のUIコンポーネントは、`src/features/{featureName}/components/`以下に作成してください。
+    - ページ固有のUIロジックは、`src/features/{featureName}/hooks/`以下に作成してください。
+    - ページ固有のユーティリティ関数は、`src/features/{featureName}/utils/`以下に作成してください。
 
 ## 許可スクリプト
 スクリプトはpackage.jsonに書かれているものだけ使用してください。これにより、プロジェクトの一貫性が保たれ、予期しない問題を防ぐことができます。
@@ -40,7 +50,7 @@
 - TSDoc を書くこと（ts, tsxともに必須。@param, @returnsなど）
 - すべての .ts / .tsx ファイルの冒頭に、そのファイルの役割・責務を2行程度で記述する、
 <!-- END:typescript-agent-rules -->
-- 各ページのエントリファイル(page.tsx)には、ロジックを直接書かず。`src/hooks/`以下にカスタムフックを作製すること。
+- 各ページのエントリファイル(page.tsx)には、ロジックを直接書かず。フィーチャー固有のフックは`src/features/{featureName}/hooks/`以下に、共通フックは`src/shared/hooks/`以下に作成すること。
 - 共通のUIコンポーネントは、`src/shared/components/`以下に作成すること。
 <!-- BEGIN:react-agent-rules -->
 - 
