@@ -6,8 +6,8 @@
 "use client";
 
 import Link from "next/link";
-import { useLogForm } from "@/hooks/useLogForm";
-import { useUserNameForm } from "@/hooks/useUserNameForm";
+import { useLogForm } from "@/features/logs/hooks/useLogForm";
+import { useUserNameForm } from "@/features/user/hooks/useUserNameForm";
 import { signIn, signOut, useSession } from "@/lib/auth-client";
 import LogForm from "@/shared/components/LogForm/LogForm";
 import ThemeToggle from "@/shared/components/ThemeToggle/ThemeToggle";
